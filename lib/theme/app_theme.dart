@@ -25,6 +25,7 @@ Color adjustBrightness(Color color,
 class AppTheme {
   // Primary and secondary colors
   static const Color primaryColor = Color.fromARGB(255, 41, 119, 236);
+  // static const Color primaryColor = Color(0xFF207cff);
   static const Color secondaryColor = Color(0xFF03DAC6);
 
   // Background and surface colors
@@ -51,16 +52,37 @@ class AppTheme {
   );
 
   static const TextStyle bodyText1 = TextStyle(
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: FontWeight.normal,
     color: primaryTextColor,
     // fontFamily: fontFamily,
   );
 
   static const TextStyle caption = TextStyle(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.normal,
     color: secondaryTextColor,
+    // fontFamily: fontFamily,
+  );
+
+  static const TextStyle headline1d = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+    color: Color.fromARGB(255, 252, 251, 251),
+    // fontFamily: fontFamily,
+  );
+
+  static const TextStyle bodyText1d = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: Color.fromARGB(255, 206, 206, 206),
+    // fontFamily: fontFamily,
+  );
+
+  static const TextStyle captiond = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: Color.fromARGB(255, 192, 192, 192),
     // fontFamily: fontFamily,
   );
 
@@ -99,9 +121,9 @@ class AppTheme {
     appBarTheme: AppBarTheme(
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
     textTheme: const TextTheme(
-      headlineLarge: headline1,
-      bodyLarge: bodyText1,
-      labelLarge: caption,
+      headlineLarge: headline1d,
+      bodyLarge: bodyText1d,
+      labelLarge: captiond,
     ),
     // fontFamily: fontFamily,
   );

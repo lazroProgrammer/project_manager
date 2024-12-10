@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
 class ClickEffectController extends GetxController {
-  final RxList<bool> clickStates;
+  RxList<bool> clickStates;
 
   ClickEffectController(int length)
       : clickStates = List.generate(length, (_) => false).obs;
@@ -14,6 +14,10 @@ class ClickEffectController extends GetxController {
         clickStates[index] = false; // Revert scaling
       }
     });
+  }
+
+  void updateLength(int length) {
+    clickStates = List.generate(length, (_) => false).obs;
   }
 
   // Shrink button effect

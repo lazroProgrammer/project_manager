@@ -1,158 +1,139 @@
-import 'package:drift/drift.dart' as p;
+import 'package:drift/drift.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tasks/core/controllers/click_effect_controller.dart';
-import 'package:tasks/core/controllers/segments_controller.dart';
-import 'package:tasks/core/controllers/tasks_controller.dart';
+import 'package:tasks/core/controllers/projects_controller.dart';
 import 'package:tasks/core/notifiers/darkmode_notifier.dart';
 import 'package:tasks/database/database.dart';
-import 'package:tasks/main.dart';
-import 'package:tasks/pages/tasks_page.dart';
-import 'package:tasks/theme/app_theme.dart';
+import 'package:tasks/pages/dashboard.dart';
+import 'package:tasks/pages/projects_page.dart';
 
+const SELECTION_COLOR = Colors.blue;
 const STATE_LIST = ["draft", "pending", "on going", "completed"];
 
-class ProjectPage extends ConsumerWidget {
-  ProjectPage({super.key});
+class MainPage extends ConsumerStatefulWidget {
+  const MainPage({super.key});
 
-  final List<String> names = [
-    "Drift Database",
-    "UI/UX Design",
-    "State management using riverpod + Getx",
-    "Write Tests",
-    "Add some Polish",
-    "Complete Deployement"
-  ];
-  final List<String> types = [
-    "sqflite",
-    "UI/UX",
-    "UI",
-    "automated testing",
-    "animations, UI/UX",
-    "deployment"
-  ];
-
-  final SegmentsController segmentsController =
-      Get.find(tag: "project/segments");
-  final ClickEffectController isClickedController =
-      Get.find(tag: "segments_click_effect");
-  final TasksController tasksController =
-      Get.put(TasksController(-1), tag: "segments/tasks");
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends ConsumerState<MainPage> {
+  int _currentIndex = 0;
+
+  final projects = Get.find<ProjectsController>(tag: "projects");
+  @override
+  Widget build(BuildContext context) {
     final dark = ref.watch(darkmodeNotifier);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("ProjectID: ${segmentsController.projectID}"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(darkmodeNotifier.notifier).toggleDarkmode(dark);
-            },
-            icon: TweenAnimationBuilder(
-                curve: Easing.legacyAccelerate,
-                tween: Tween<double>(begin: 0, end: dark ? 0 : 2),
-                duration: const Duration(milliseconds: 500),
-                builder: (context, value, child) {
-                  return Transform.rotate(
-                      angle: value * 3.14, // Rotation animation
-                      child: Opacity(
-                        opacity: (1 - (value % 2)).abs(), // Fading effect
-                        child: Icon(
-                          dark ? Icons.dark_mode : Icons.light_mode,
-                          size: 30,
-                          color: dark ? Colors.blue[500] : Colors.yellow[700],
+        body: switch (_currentIndex) {
+          0 => Dashboard(),
+          1 => ProjectsPage(),
+          2 => Container(),
+          // 3 => Container(),
+          int() => null,
+        },
+        bottomNavigationBar: BottomAppBar(
+          height: 76,
+          shape: const CircularNotchedRectangle(),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                MaterialButton(
+                    shape: OvalBorder(),
+                    textColor:
+                        (_currentIndex == 0) ? SELECTION_COLOR : Colors.grey,
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.dashboard,
+                          size: (_currentIndex == 0) ? 30 : 26,
                         ),
-                      ));
-                }),
+                        Text("Dashboard",
+                            style: TextStyle(
+                                fontSize: (_currentIndex == 0) ? 13 : 12)),
+                      ],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _currentIndex = 0;
+                      });
+                    }),
+                // MaterialButton(
+                //     shape: OvalBorder(),
+                //     textColor:
+                //         (_currentIndex == 1) ? SELECTION_COLOR : Colors.grey,
+                //     child: Column(
+                //       children: [
+                //         const Icon(Icons.bar_chart_sharp),
+                //         Text(
+                //           "Analytics",
+                //           style:
+                //               TextStyle(fontSize: (_currentIndex == 1) ? 13 : 12),
+                //         ),
+                //       ],
+                //     ),
+                //     onPressed: () {
+                //       setState(() {
+                //         _currentIndex = 1;
+                //       });
+                //     }),
+                MaterialButton(
+                    shape: OvalBorder(),
+                    textColor:
+                        (_currentIndex == 1) ? SELECTION_COLOR : Colors.grey,
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.folder_special,
+                          size: (_currentIndex == 1) ? 30 : 26,
+                        ),
+                        Text("Projects",
+                            style: TextStyle(
+                                fontSize: (_currentIndex == 1) ? 14 : 12)),
+                      ],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _currentIndex = 1;
+                      });
+                    }),
+                // MaterialButton(
+                //     shape: OvalBorder(),
+                //     textColor:
+                //         (_currentIndex == 3) ? SELECTION_COLOR : Colors.grey,
+                //     child: Column(
+                //       children: [
+                //         const Icon(Icons.person),
+                //         Text("Me",
+                //             style: TextStyle(
+                //                 fontSize: (_currentIndex == 3) ? 13 : 12)),
+                //       ],
+                //     ),
+                //     onPressed: () {
+                //       setState(() {
+                //         _currentIndex = 3;
+                //       });
+                //     }),
+              ],
+            ),
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Obx(() {
-          return GridView.builder(
-            itemCount: segmentsController.segments.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, childAspectRatio: 0.9),
-            itemBuilder: (context, index) {
-              return Obx(
-                () {
-                  final isClicked = isClickedController.clickStates[index];
-                  return Container(
-                    padding: EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: AnimatedScale(
-                      scale: isClicked ? 0.95 : 1.0,
-                      duration: const Duration(milliseconds: 100),
-                      child: Card(
-                          elevation: (dark) ? 2 : 3,
-                          shadowColor: (dark)
-                              ? context.primaryColor
-                              // : Theme.of(context).primaryColor,
-                              : context.primaryColor,
-                          color: (dark) ? context.primaryColor : Colors.white60,
-                          child: InkWell(
-                            onTapUp: (details) =>
-                                isClickedController.buttonShrink(index),
-                            onLongPress: () =>
-                                isClickedController.buttonShrink(index),
-                            onTapCancel: () =>
-                                isClickedController.buttonEnlarge(index),
-                            onTap: () {
-                              isClickedController.buttonShrink(index);
-                              isClickedController.buttonEnlarge(index);
-                              tasksController.getTasksBySegmentID(
-                                  segmentsController.segments[index].segmentID);
-                              Get.to(
-                                () => TasksPage(),
-                                duration: Duration(milliseconds: 400),
-                                transition: Transition.fade,
-                              );
-                            },
-                            splashColor: (dark)
-                                ? adjustBrightness(context.primaryColor,
-                                    isDarkMode: dark, brightness: 0.6)
-                                : adjustBrightness(context.primaryColor,
-                                    isDarkMode: dark, brightness: 0.8),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              margin: EdgeInsets.fromLTRB(10, 10, 10, 6),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    names[index],
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(types[index])
-                                ],
-                              ),
-                            ),
-                          )),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        }),
-      ),
-      floatingActionButton: Container(
-        margin: EdgeInsets.all(8),
-        child: FloatingActionButton(
+          // currentIndex: _currentIndex,
+          // onTap: (index) {
+          //   setState(() {
+          //     _currentIndex = index;
+          //   });
+          // }),
+        ),
+        floatingActionButton: FloatingActionButton(
           autofocus: true,
           shape: CircleBorder(side: BorderSide.none),
           onPressed: () {
-            showSegmenttAddForum(context, ref, segmentsController);
+            showProjectAddForum(context, ref, projects);
           },
           backgroundColor:
               dark ? Color.fromARGB(255, 187, 187, 187) : Colors.grey[800],
@@ -160,19 +141,21 @@ class ProjectPage extends ConsumerWidget {
           // foregroundColor: Colors.white,
           child: Icon(Icons.add),
         ),
-      ),
-    );
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.centerDocked);
   }
 }
 
-void showSegmenttAddForum(
-    BuildContext context, WidgetRef ref, SegmentsController seg) {
+void showProjectAddForum(
+    BuildContext context, WidgetRef ref, ProjectsController p) {
   showDialog(
       context: context,
       builder: (context) {
         String selectedState = STATE_LIST[0];
-        DateTime selectedTime = DateTime.now().copyWith(second: 0, minute: 0);
-        DateTime deadline = DateTime.now().copyWith(second: 0, minute: 0);
+        // DateTime? selectedTime = DateTime.now().copyWith(second: 0, minute: 0);
+        // DateTime? deadline = DateTime.now().copyWith(second: 0, minute: 0);
+        DateTime? selectedTime;
+        DateTime? deadline;
         final formKey = GlobalKey<FormState>();
         final nameTEC = TextEditingController();
         final descriptTEC = TextEditingController();
@@ -184,22 +167,41 @@ void showSegmenttAddForum(
             ElevatedButton(
                 onPressed: () {
                   bool isValid = formKey.currentState!.validate();
-                  if (isValid && selectedTime.compareTo(deadline) < 0) {
-                    final newSegment = SegmentsCompanion.insert(
-                      projectID: seg.projectID.value,
-                      name: nameTEC.text,
-                      type: descriptTEC.text,
-                      state: selectedState,
-                      startDate: p.Value<DateTime?>(selectedTime),
-                      completionDate: p.Value<DateTime?>(deadline),
-                    );
-                    seg.insertSegment(newSegment).then((_) {});
+                  if (isValid &&
+                      (selectedTime == null ||
+                          deadline == null ||
+                          selectedTime != null &&
+                              deadline != null &&
+                              selectedTime!.compareTo(deadline!) < 0)) {
+                    final newProject = ProjectsCompanion.insert(
+                        name: nameTEC.text,
+                        description: descriptTEC.text,
+                        state: selectedState,
+                        startDate: d.Value<DateTime?>(selectedTime),
+                        completionDate: d.Value<DateTime?>(deadline),
+                        createdAt: DateTime.now());
+                    p.insertProject(newProject).then((_) {});
                     Navigator.pop(context);
-                  } else if (selectedTime.compareTo(deadline) >= 0) {
-                    Fluttertoast.showToast(
-                        msg:
-                            "you can't put the deadline before the project start");
+                  } else {
+                    if (selectedTime != null &&
+                        deadline != null &&
+                        selectedTime!.compareTo(deadline!) >= 0) {
+                      Fluttertoast.showToast(
+                          msg:
+                              "you can't put the deadline before the project start");
+                    }
                   }
+                  // ref
+                  //     .read(mealPeriodsNotifier.notifier)
+                  //     .insert(MealPeriodsCompanion.insert(
+                  //       type: selectedMealPeriod.value!,
+                  //       startTime: DateTime.now().copyWith(
+                  //           hour: selectedTime.hour,
+                  //           minute: selectedTime.minute),
+                  //       endTime: DateTime.now().copyWith(
+                  //           hour: selectedTime.hour,
+                  //           minute: selectedTime.minute),
+                  //     ));
                 },
                 child: Text("add"))
           ],
@@ -213,7 +215,7 @@ void showSegmenttAddForum(
                     child: Column(
                       children: [
                         Text(
-                          "Segment:",
+                          "Project:",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
@@ -224,7 +226,7 @@ void showSegmenttAddForum(
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
                               hintText: "name",
-                              prefixIcon: const Icon(Icons.abc_rounded),
+                              prefixIcon: const Icon(Icons.numbers),
                             ),
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -239,11 +241,11 @@ void showSegmenttAddForum(
                           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                           child: TextFormField(
                             controller: descriptTEC,
-                            maxLines: 1,
+                            maxLines: 2,
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
-                              hintText: "Type",
-                              prefixIcon: const Icon(Icons.type_specimen),
+                              hintText: "Description",
+                              prefixIcon: const Icon(Icons.numbers),
                             ),
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -283,7 +285,9 @@ void showSegmenttAddForum(
                           child: Row(
                             children: [
                               Text("Start-Time: "),
-                              Text(DateFormat('d/M/y').format(selectedTime)),
+                              Text((selectedTime == null)
+                                  ? "None"
+                                  : DateFormat('d/M/y').format(selectedTime!)),
                               IconButton(
                                   onPressed: () async {
                                     final now = DateTime.now();
@@ -314,7 +318,9 @@ void showSegmenttAddForum(
                           child: Row(
                             children: [
                               Text("Deadline: "),
-                              Text(DateFormat('d/M/y').format(deadline)),
+                              Text((deadline == null)
+                                  ? "None"
+                                  : DateFormat('d/M/y').format(deadline!)),
                               IconButton(
                                   onPressed: () async {
                                     final now = DateTime.now();

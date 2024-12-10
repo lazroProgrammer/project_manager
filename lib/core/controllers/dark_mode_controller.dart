@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-class DarkModeController extends GetxController {
-  RxBool darkMode = false.obs;
+class ToggleController extends GetxController {
+  RxBool isPlayed = false.obs;
 
   void toggle() {
-    darkMode.value = !darkMode.value;
+    isPlayed.value = !isPlayed.value;
   }
 }
