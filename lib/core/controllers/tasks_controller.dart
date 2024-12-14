@@ -84,17 +84,13 @@ class TasksController extends GetxController {
     final json = task.toJson();
     final result = await dao.editTaskByID(json["taskID"], json);
     if (result >= 0) {
-      final newTask = await dao.getTaskByID(result);
       int index = tasks.indexWhere((p) => p.taskID == task.taskID.value);
-      if (newTask != null) {
-        if (index != -1) {
-          tasks[index] = newTask;
-          Fluttertoast.showToast(msg: "Task successfully updated");
-        } else {
-          Fluttertoast.showToast(msg: "Task not found");
-        }
+
+      if (index != -1) {
+        tasks[index] = Task.fromJson(json);
+        Fluttertoast.showToast(msg: "Task successfully updated");
       } else {
-        Fluttertoast.showToast(msg: "oops, you gotta get something");
+        Fluttertoast.showToast(msg: "Task not found");
       }
     } else {
       Fluttertoast.showToast(msg: "oops something went wrong");

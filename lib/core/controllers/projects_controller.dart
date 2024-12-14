@@ -53,18 +53,14 @@ class ProjectsController extends GetxController {
     final json = project.toJson();
     final result = await dao.editProjectByID(json["projectID"], json);
     if (result >= 0) {
-      final newproject = await dao.getProjectById(result);
       int index =
           projects.indexWhere((p) => p.projectID == project.projectID.value);
-      if (newproject != null) {
-        if (index != -1) {
-          projects[index] = newproject;
-          Fluttertoast.showToast(msg: "project successfully updated");
-        } else {
-          Fluttertoast.showToast(msg: "project not found");
-        }
+
+      if (index != -1) {
+        projects[index] = Project.fromJson(json);
+        Fluttertoast.showToast(msg: "project successfully updated");
       } else {
-        Fluttertoast.showToast(msg: "oops, you gotta get something");
+        Fluttertoast.showToast(msg: "project not found");
       }
     } else {
       Fluttertoast.showToast(msg: "oops something went wrong");

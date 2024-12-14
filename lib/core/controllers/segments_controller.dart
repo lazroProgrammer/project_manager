@@ -60,18 +60,13 @@ class SegmentsController extends GetxController {
     final json = segment.toJson();
     final result = await dao.editSegmentByID(json["segmentID"], json);
     if (result >= 0) {
-      final newsegment = await dao.getSegmentByID(result);
       int index =
           segments.indexWhere((p) => p.segmentID == segment.segmentID.value);
-      if (newsegment != null) {
-        if (index != -1) {
-          segments[index] = newsegment;
-          Fluttertoast.showToast(msg: "segment successfully updated");
-        } else {
-          Fluttertoast.showToast(msg: "segment not found");
-        }
+      if (index != -1) {
+        segments[index] = Segment.fromJson(json);
+        Fluttertoast.showToast(msg: "segment successfully updated");
       } else {
-        Fluttertoast.showToast(msg: "oops, you gotta get something");
+        Fluttertoast.showToast(msg: "segment not found");
       }
     } else {
       Fluttertoast.showToast(msg: "oops something went wrong");

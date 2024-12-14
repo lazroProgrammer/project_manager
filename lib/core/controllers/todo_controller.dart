@@ -76,17 +76,13 @@ class TodoController extends GetxController {
     final json = todo.toJson();
     final result = await dao.editTodoByID(json["todoID"], json);
     if (result >= 0) {
-      final newTodo = await dao.getTodoByID(result);
       int index = todos.indexWhere((p) => p.todoID == todo.todoID.value);
-      if (newTodo != null) {
-        if (index != -1) {
-          todos[index] = newTodo;
-          Fluttertoast.showToast(msg: "Todo successfully updated");
-        } else {
-          Fluttertoast.showToast(msg: "Todo not found");
-        }
+
+      if (index != -1) {
+        todos[index] = Todo.fromJson(json);
+        Fluttertoast.showToast(msg: "Todo successfully updated");
       } else {
-        Fluttertoast.showToast(msg: "oops, you gotta get something");
+        Fluttertoast.showToast(msg: "Todo not found");
       }
     } else {
       Fluttertoast.showToast(msg: "oops something went wrong");
