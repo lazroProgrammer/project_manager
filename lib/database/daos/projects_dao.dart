@@ -3,6 +3,20 @@ import 'package:tasks/database/database.dart';
 
 part 'projects_dao.g.dart';
 
+extension ProjectCompanionExtension on ProjectsCompanion {
+  Map<String, dynamic> toJson() {
+    return {
+      'projectID': projectID.value,
+      'name': name.value,
+      'description': description.value,
+      'state': state.value,
+      'createdAt': createdAt.value,
+      'startDate': startDate.value,
+      'completionDate': completionDate.value,
+    };
+  }
+}
+
 @DriftAccessor(tables: [Projects])
 class ProjectsDao extends DatabaseAccessor<AppDatabase>
     with _$ProjectsDaoMixin {
@@ -24,7 +38,7 @@ class ProjectsDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> insertProject(ProjectsCompanion project) async {
     try {
-      return await db.into(db.projects).insert(project);
+      return await db.into(db.projects).insertOnConflictUpdate(project);
     } catch (e) {
       return -1;
     }

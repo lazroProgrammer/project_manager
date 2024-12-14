@@ -1,7 +1,24 @@
 import 'package:drift/drift.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tasks/database/database.dart';
 
 part 'tasks_dao.g.dart';
+
+extension TaskCompanionExtension on TasksCompanion {
+  Map<String, dynamic> toJson() {
+    return {
+      'taskID': taskID.value,
+      'name': name.value,
+      'description': description.value,
+      'state': state.value,
+      'priority': priority.value,
+      'createdAt': createdAt.value,
+      'startDate': startDate.value,
+      'completionDate': completionDate.value,
+      'segmentID': segmentID.value,
+    };
+  }
+}
 
 @DriftAccessor(tables: [Tasks])
 class TasksDao extends DatabaseAccessor<AppDatabase> with _$TasksDaoMixin {
@@ -17,7 +34,7 @@ class TasksDao extends DatabaseAccessor<AppDatabase> with _$TasksDaoMixin {
   }
 
   Future<int> insertTask(TasksCompanion task) async {
-    return await db.into(db.tasks).insert(task);
+    return await db.into(db.tasks).insertOnConflictUpdate(task);
   }
 
   Future<Task?> getTaskByID(int id) async {
@@ -71,6 +88,21 @@ class TasksDao extends DatabaseAccessor<AppDatabase> with _$TasksDaoMixin {
           ..where(
               (tbl) => tbl.startDate.isNotNull() & tbl.completionDate.isNull()))
         .get();
+  }
+
+  Future<bool> areAllTodosCompletedByID(int id) async {
+    final todos =
+        await (select(db.todos)..where((tbl) => tbl.taskID.equals(id))).get();
+    if (todos.isEmpty) {
+      Fluttertoast.showToast(msg: "you can't complete an empty task");
+      return false;
+    }
+    for (var todo in todos) {
+      if (todo.completedAt == null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<int> deleteTaskByID(int id) async {

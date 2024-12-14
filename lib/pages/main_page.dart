@@ -147,18 +147,17 @@ class _MainPageState extends ConsumerState<MainPage> {
 }
 
 void showProjectAddForum(
-    BuildContext context, WidgetRef ref, ProjectsController p) {
+    BuildContext context, WidgetRef ref, ProjectsController p,
+    {Project? project}) {
   showDialog(
       context: context,
       builder: (context) {
         String selectedState = STATE_LIST[0];
-        // DateTime? selectedTime = DateTime.now().copyWith(second: 0, minute: 0);
-        // DateTime? deadline = DateTime.now().copyWith(second: 0, minute: 0);
-        DateTime? selectedTime;
-        DateTime? deadline;
+        DateTime? selectedTime = project?.startDate;
+        DateTime? deadline = project?.completionDate;
         final formKey = GlobalKey<FormState>();
-        final nameTEC = TextEditingController();
-        final descriptTEC = TextEditingController();
+        final nameTEC = TextEditingController(text: project?.name);
+        final descriptTEC = TextEditingController(text: project?.description);
 
         return AlertDialog(
           actions: [
@@ -174,12 +173,20 @@ void showProjectAddForum(
                               deadline != null &&
                               selectedTime!.compareTo(deadline!) < 0)) {
                     final newProject = ProjectsCompanion.insert(
+                        projectID: (project != null)
+                            ? d.Value(project.projectID)
+                            : d.Value<int>.absent(),
                         name: nameTEC.text,
                         description: descriptTEC.text,
                         state: selectedState,
                         startDate: d.Value<DateTime?>(selectedTime),
                         completionDate: d.Value<DateTime?>(deadline),
                         createdAt: DateTime.now());
+                    if (project == null) {
+                      p.insertProject(newProject).then((_) {});
+                    } else {
+                      p.editProject(newProject);
+                    }
                     p.insertProject(newProject).then((_) {});
                     Navigator.pop(context);
                   } else {

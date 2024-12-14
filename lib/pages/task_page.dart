@@ -1,35 +1,38 @@
-import 'package:drift/drift.dart' as drift;
+import 'package:drift/drift.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tasks/core/controllers/dark_mode_controller.dart';
+import 'package:tasks/core/controllers/tasks_controller.dart';
 import 'package:tasks/core/controllers/todo_controller.dart';
 import 'package:tasks/core/notifiers/darkmode_notifier.dart';
 import 'package:tasks/database/database.dart';
+import 'package:tasks/widgets/popup_menu.dart';
 
 class TaskPage extends ConsumerWidget {
-  TaskPage({super.key});
-
+  TaskPage({super.key, required this.taskCtrller, required this.taskIndex});
+  final TasksController taskCtrller;
   final TodoController todo = Get.find(tag: "tasks/todos");
-  final ToggleController toggle = Get.find(tag: "play/pause");
+
+  final int taskIndex;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dark = ref.watch(darkmodeNotifier);
     return Scaffold(
         appBar: AppBar(
-          title: Text(todo.task.value.name),
+          title: Text(taskCtrller.tasks[taskIndex].name),
           actions: [
             Obx(() {
+              final isPlayed = taskCtrller.tasks[taskIndex].startDate != null;
+
               return IconButton(
                 onPressed: () {
-                  toggle.toggle();
+                  taskCtrller.togglePlayTask(taskIndex, !isPlayed);
                 },
                 icon: TweenAnimationBuilder(
                     curve: Easing.legacy,
-                    tween: Tween<double>(
-                        begin: 0, end: toggle.isPlayed.value ? 0 : 2),
+                    tween: Tween<double>(begin: 0, end: isPlayed ? 0 : 2),
                     duration: const Duration(milliseconds: 50),
                     builder: (context, value, child) {
                       return Transform.rotate(
@@ -37,9 +40,7 @@ class TaskPage extends ConsumerWidget {
                           child: Opacity(
                             opacity: (1 - (value % 2)).abs(), // Fading effect
                             child: Icon(
-                              toggle.isPlayed.value
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
+                              isPlayed ? Icons.pause : Icons.play_arrow,
                               size: 30,
                               // color: isPlayed ? Colors.blue[500] : Colors.yellow[700],
                             ),
@@ -59,11 +60,11 @@ class TaskPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      todo.task.value.name,
+                      taskCtrller.tasks[taskIndex].name,
                       style:
                           TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                     ),
-                    Text(todo.task.value.description)
+                    Text(taskCtrller.tasks[taskIndex].description)
                     // Text(
                     //     "     JSX stands for JavaScript XML. JSX allows us to write HTML elements with JavaScript code. An HTML element has an opening and closing tags, content, and attribute in the opening tag. However, some HTML elements may not have content and a closing tag - they are self closing elements. To create HTML elements in React we do not use the createElement() instead we just use JSX elements. Therefore, JSX makes it easier to write and add HTML elements in React. JSX will be converted to JavaScript on browser using a transpiler - babel.js. Babel is a library which transpiles JSX to pure JavaScript and latest JavaScript to older version. See the JSX code below."),
                   ],
@@ -74,16 +75,36 @@ class TaskPage extends ConsumerWidget {
                   itemCount: todo.todos.length,
                   itemBuilder: (context, index) {
                     final completedAt = todo.todos[index].completedAt;
-                    return CheckboxListTile(
-                      value: completedAt != null,
-                      onChanged: (value) {
-                        todo.toggleTodo(index, value ?? false);
-                      },
-                      title: Text(todo.todos[index].name),
-                      subtitle: Text((completedAt == null)
-                          ? "not completed"
-                          : "Completed at: ${DateFormat('d/M/y hh:mm').format(completedAt)}"),
-                    );
+                    return Obx(() {
+                      final isPlayed =
+                          taskCtrller.tasks[taskIndex].startDate != null;
+                      return InkWell(
+                        onLongPress: () {
+                          showPopupMenu(
+                            context,
+                            edit: () {
+                              showTodosAddForum(context, ref, todo,
+                                  todo: todo.todos[index]);
+                            },
+                            delete: () {
+                              todo.deleteTodoById(todo.todos[index].todoID);
+                            },
+                          );
+                        },
+                        child: CheckboxListTile(
+                          value: completedAt != null,
+                          onChanged: !isPlayed
+                              ? null
+                              : (value) {
+                                  todo.toggleTodo(index, value ?? false);
+                                },
+                          title: Text(todo.todos[index].name),
+                          subtitle: Text((completedAt == null)
+                              ? "not completed"
+                              : "Completed at: ${DateFormat('d/M/y hh:mm').format(completedAt)}"),
+                        ),
+                      );
+                    });
                   },
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
@@ -113,15 +134,14 @@ class TaskPage extends ConsumerWidget {
 }
 
 void showTodosAddForum(
-    BuildContext context, WidgetRef ref, TodoController todoCon) {
+    BuildContext context, WidgetRef ref, TodoController todoCon,
+    {Todo? todo}) {
   showDialog(
       context: context,
       builder: (context) {
-        DateTime selectedTime = DateTime.now().copyWith(second: 0, minute: 0);
-        DateTime deadline = DateTime.now().copyWith(second: 0, minute: 0);
+        DateTime? selectedTime = todo?.startedAt;
         final formKey = GlobalKey<FormState>();
-        final nameTEC = TextEditingController();
-
+        final nameTEC = TextEditingController(text: todo?.name);
         return AlertDialog(
           actions: [
             ElevatedButton(
@@ -129,20 +149,23 @@ void showTodosAddForum(
             ElevatedButton(
                 onPressed: () async {
                   bool isValid = formKey.currentState!.validate();
-                  if (isValid && selectedTime.compareTo(deadline) < 0) {
+                  if (isValid) {
                     final newTodo = TodosCompanion.insert(
-                        taskID: todoCon.task.value.taskID,
+                        todoID: (todo != null)
+                            ? d.Value(todo.todoID)
+                            : d.Value<int>.absent(),
+                        taskID: todoCon.taskID.value,
                         name: nameTEC.text,
-                        startedAt: drift.Value<DateTime?>(selectedTime),
-                        completedAt: drift.Value<DateTime?>(null));
-                    await todoCon.insertTodo(newTodo);
-                  } else if (selectedTime.compareTo(deadline) >= 0) {
-                    Fluttertoast.showToast(
-                        msg:
-                            "you can't put the deadline before the project start");
-                  }
+                        startedAt: d.Value<DateTime?>(selectedTime),
+                        completedAt: d.Value<DateTime?>(todo?.completedAt));
 
-                  Navigator.pop(context);
+                    if (todo == null) {
+                      todoCon.insertTodo(newTodo).then((_) {});
+                    } else {
+                      todoCon.editTodo(newTodo);
+                    }
+                    Navigator.pop(context);
+                  }
                 },
                 child: Text("add"))
           ],
@@ -184,7 +207,9 @@ void showTodosAddForum(
                           child: Row(
                             children: [
                               Text("Start-Time: "),
-                              Text(DateFormat('d/M/y').format(selectedTime)),
+                              Text((selectedTime == null)
+                                  ? "None"
+                                  : DateFormat('d/M/y').format(selectedTime!)),
                               IconButton(
                                   onPressed: () async {
                                     final now = DateTime.now();

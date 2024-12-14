@@ -2,15 +2,16 @@ import 'package:drift/drift.dart' as d;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:tasks/database/daos/tasks_dao.dart';
 import 'package:tasks/database/daos/todos_dao.dart';
 import 'package:tasks/database/database.dart';
 
 class TodoController extends GetxController {
   RxList<Todo> todos = RxList<Todo>();
-  Rx<Task> task;
-  TodoController(Task t) : task = t.obs;
+  RxInt taskID = (-1).obs;
 
   final TodosDao dao = TodosDao(AppDatabase());
+  final TasksDao taskDao = TasksDao(AppDatabase());
   Logger log = Logger();
 
   Future<void> getAll() async {
@@ -23,19 +24,31 @@ class TodoController extends GetxController {
   }
 
   Future<void> getTodosBytaskID(Task task) async {
-    this.task = task.obs;
+    taskID = task.taskID.obs;
     final result = await dao.getTodosByTaskID(task.taskID);
     todos.assignAll(result);
   }
 
   Future<void> insertTodo(TodosCompanion todo) async {
     try {
-      final result = await dao.insertTodo(todo);
+      final int result;
+      result = await dao.insertTodo(todo);
       if (result >= 0) {
         final newTodo = await dao.getTodoByID(result);
+        log.i(newTodo);
         if (newTodo != null) {
-          todos.add(newTodo);
-          Fluttertoast.showToast(msg: "Todo successfully added");
+          if (todo.todoID == const d.Value.absent()) {
+            todos.add(newTodo);
+            Fluttertoast.showToast(msg: "todo successfully added");
+          } else {
+            int index = todos.indexWhere((s) => s.todoID == todo.todoID.value);
+            if (index != -1) {
+              todos[index] = newTodo;
+              Fluttertoast.showToast(msg: "todo successfully updated");
+            } else {
+              Fluttertoast.showToast(msg: "todo not found");
+            }
+          }
         } else {
           Fluttertoast.showToast(msg: "oops something went wrong");
         }
@@ -56,6 +69,27 @@ class TodoController extends GetxController {
     } catch (e) {
       log.e('Failed to delete Todo: $e');
       return -1;
+    }
+  }
+
+  Future<void> editTodo(TodosCompanion todo) async {
+    final json = todo.toJson();
+    final result = await dao.editTodoByID(json["todoID"], json);
+    if (result >= 0) {
+      final newTodo = await dao.getTodoByID(result);
+      int index = todos.indexWhere((p) => p.todoID == todo.todoID.value);
+      if (newTodo != null) {
+        if (index != -1) {
+          todos[index] = newTodo;
+          Fluttertoast.showToast(msg: "Todo successfully updated");
+        } else {
+          Fluttertoast.showToast(msg: "Todo not found");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "oops, you gotta get something");
+      }
+    } else {
+      Fluttertoast.showToast(msg: "oops something went wrong");
     }
   }
 

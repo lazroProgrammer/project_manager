@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' as p;
+import 'package:drift/drift.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,6 +12,7 @@ import 'package:tasks/database/database.dart';
 import 'package:tasks/main.dart';
 import 'package:tasks/pages/tasks_page.dart';
 import 'package:tasks/theme/app_theme.dart';
+import 'package:tasks/widgets/popup_menu.dart';
 
 const STATE_LIST = ["draft", "pending", "on going", "completed"];
 
@@ -98,10 +99,13 @@ class ProjectPage extends ConsumerWidget {
                               : context.primaryColor,
                           color: (dark) ? context.primaryColor : Colors.white60,
                           child: InkWell(
-                            onTapUp: (details) =>
-                                isClickedController.buttonShrink(index),
-                            onLongPress: () =>
-                                isClickedController.buttonShrink(index),
+                            onLongPress: () {
+                              showPopupMenu(context, edit: () {}, delete: () {
+                                segmentsController.deleteSegmentById(
+                                    segmentsController
+                                        .segments[index].segmentID);
+                              });
+                            },
                             onTapCancel: () =>
                                 isClickedController.buttonEnlarge(index),
                             onTap: () {
@@ -166,16 +170,17 @@ class ProjectPage extends ConsumerWidget {
 }
 
 void showSegmenttAddForum(
-    BuildContext context, WidgetRef ref, SegmentsController seg) {
+    BuildContext context, WidgetRef ref, SegmentsController seg,
+    {Segment? segment}) {
   showDialog(
       context: context,
       builder: (context) {
         String selectedState = STATE_LIST[0];
-        DateTime selectedTime = DateTime.now().copyWith(second: 0, minute: 0);
-        DateTime deadline = DateTime.now().copyWith(second: 0, minute: 0);
+        DateTime? selectedTime = segment?.startDate;
+        DateTime? deadline = segment?.completionDate;
         final formKey = GlobalKey<FormState>();
-        final nameTEC = TextEditingController();
-        final descriptTEC = TextEditingController();
+        final nameTEC = TextEditingController(text: segment?.name);
+        final typeTEC = TextEditingController(text: segment?.type);
 
         return AlertDialog(
           actions: [
@@ -184,18 +189,33 @@ void showSegmenttAddForum(
             ElevatedButton(
                 onPressed: () {
                   bool isValid = formKey.currentState!.validate();
-                  if (isValid && selectedTime.compareTo(deadline) < 0) {
+                  if (isValid &&
+                      (selectedTime == null ||
+                          deadline == null ||
+                          selectedTime != null &&
+                              deadline != null &&
+                              selectedTime!.compareTo(deadline!) < 0)) {
                     final newSegment = SegmentsCompanion.insert(
+                      segmentID: (segment != null)
+                          ? d.Value(segment.segmentID)
+                          : d.Value<int>.absent(),
                       projectID: seg.projectID.value,
                       name: nameTEC.text,
-                      type: descriptTEC.text,
+                      type: typeTEC.text,
                       state: selectedState,
-                      startDate: p.Value<DateTime?>(selectedTime),
-                      completionDate: p.Value<DateTime?>(deadline),
+                      startDate: d.Value<DateTime?>(selectedTime),
+                      completionDate: d.Value<DateTime?>(deadline),
                     );
-                    seg.insertSegment(newSegment).then((_) {});
+                    if (segment == null) {
+                      seg.insertSegment(newSegment).then((_) {});
+                    } else {
+                      seg.editSegment(newSegment);
+                    }
+
                     Navigator.pop(context);
-                  } else if (selectedTime.compareTo(deadline) >= 0) {
+                  } else if ((selectedTime != null &&
+                      deadline != null &&
+                      selectedTime!.compareTo(deadline!) >= 0)) {
                     Fluttertoast.showToast(
                         msg:
                             "you can't put the deadline before the project start");
@@ -238,7 +258,7 @@ void showSegmenttAddForum(
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                           child: TextFormField(
-                            controller: descriptTEC,
+                            controller: typeTEC,
                             maxLines: 1,
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
@@ -283,7 +303,9 @@ void showSegmenttAddForum(
                           child: Row(
                             children: [
                               Text("Start-Time: "),
-                              Text(DateFormat('d/M/y').format(selectedTime)),
+                              Text((selectedTime == null)
+                                  ? "None"
+                                  : DateFormat('d/M/y').format(selectedTime!)),
                               IconButton(
                                   onPressed: () async {
                                     final now = DateTime.now();
@@ -314,7 +336,9 @@ void showSegmenttAddForum(
                           child: Row(
                             children: [
                               Text("Deadline: "),
-                              Text(DateFormat('d/M/y').format(deadline)),
+                              Text((deadline == null)
+                                  ? "None"
+                                  : DateFormat('d/M/y').format(deadline!)),
                               IconButton(
                                   onPressed: () async {
                                     final now = DateTime.now();

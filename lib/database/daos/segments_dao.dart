@@ -3,6 +3,20 @@ import 'package:tasks/database/database.dart';
 
 part 'segments_dao.g.dart';
 
+extension SegmentCompanionExtension on SegmentsCompanion {
+  Map<String, dynamic> toJson() {
+    return {
+      'segmentID': segmentID.value,
+      'name': name.value,
+      'state': state.value,
+      'type': type.value,
+      'startDate': startDate.value,
+      'completionDate': completionDate.value,
+      'projectID': projectID.value,
+    };
+  }
+}
+
 @DriftAccessor(tables: [Segments])
 class SegmentsDao extends DatabaseAccessor<AppDatabase>
     with _$SegmentsDaoMixin {
@@ -18,7 +32,7 @@ class SegmentsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> insertSegment(SegmentsCompanion segment) async {
-    return await db.into(db.segments).insert(segment);
+    return await db.into(db.segments).insertOnConflictUpdate(segment);
   }
 
   Future<Segment?> getSegmentByID(int id) async {

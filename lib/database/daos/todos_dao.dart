@@ -3,6 +3,18 @@ import 'package:tasks/database/database.dart';
 
 part 'todos_dao.g.dart';
 
+extension TodoCompanionExtension on TodosCompanion {
+  Map<String, dynamic> toJson() {
+    return {
+      'todoID': todoID.value,
+      'name': name.value,
+      'startedAt': startedAt.value,
+      'completedAt': completedAt.value,
+      'taskID': taskID.value,
+    };
+  }
+}
+
 @DriftAccessor(tables: [Todos])
 class TodosDao extends DatabaseAccessor<AppDatabase> with _$TodosDaoMixin {
   final AppDatabase db;
@@ -17,7 +29,14 @@ class TodosDao extends DatabaseAccessor<AppDatabase> with _$TodosDaoMixin {
   }
 
   Future<int> insertTodo(TodosCompanion todo) async {
-    return await db.into(db.todos).insert(todo);
+    try {
+      int i = await db.into(db.todos).insertOnConflictUpdate(todo);
+      print(i);
+      return await db.into(db.todos).insertOnConflictUpdate(todo);
+    } catch (e) {
+      print(e);
+      return -1;
+    }
   }
 
   Future<Todo?> getTodoByID(int id) async {

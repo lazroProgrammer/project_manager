@@ -8,6 +8,7 @@ import 'package:tasks/core/notifiers/darkmode_notifier.dart';
 import 'package:tasks/main.dart';
 import 'package:tasks/pages/project_page.dart';
 import 'package:tasks/theme/app_theme.dart';
+import 'package:tasks/widgets/popup_menu.dart';
 
 class ProjectsPage extends ConsumerWidget {
   ProjectsPage({super.key});
@@ -77,10 +78,12 @@ class ProjectsPage extends ConsumerWidget {
                             color:
                                 (dark) ? context.primaryColor : Colors.white60,
                             child: InkWell(
-                              onTapUp: (details) =>
-                                  isClickedController.buttonShrink(index),
-                              onLongPress: () =>
-                                  isClickedController.buttonShrink(index),
+                              onLongPress: () {
+                                showPopupMenu(context, edit: () {}, delete: () {
+                                  projects.deleteProjectById(
+                                      projects.projects[index].projectID);
+                                });
+                              },
                               onTapCancel: () =>
                                   isClickedController.buttonEnlarge(index),
                               onTap: () {

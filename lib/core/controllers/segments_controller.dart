@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as d;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -32,8 +33,19 @@ class SegmentsController extends GetxController {
       if (result >= 0) {
         final newSegment = await dao.getSegmentByID(result);
         if (newSegment != null) {
-          segments.add(newSegment);
-          Fluttertoast.showToast(msg: "Segment successfully added");
+          if (segment.segmentID == const d.Value.absent()) {
+            segments.add(newSegment);
+            Fluttertoast.showToast(msg: "Segment successfully added");
+          } else {
+            int index = segments
+                .indexWhere((s) => s.segmentID == segment.segmentID.value);
+            if (index != -1) {
+              segments[index] = newSegment;
+              Fluttertoast.showToast(msg: "Segment successfully updated");
+            } else {
+              Fluttertoast.showToast(msg: "Segment not found");
+            }
+          }
         } else {
           Fluttertoast.showToast(msg: "oops something went wrong");
         }
@@ -41,6 +53,28 @@ class SegmentsController extends GetxController {
     } catch (e) {
       Fluttertoast.showToast(msg: "Failed to add Segments");
       log.e('Failed to insert Segment: $e');
+    }
+  }
+
+  Future<void> editSegment(SegmentsCompanion segment) async {
+    final json = segment.toJson();
+    final result = await dao.editSegmentByID(json["segmentID"], json);
+    if (result >= 0) {
+      final newsegment = await dao.getSegmentByID(result);
+      int index =
+          segments.indexWhere((p) => p.segmentID == segment.segmentID.value);
+      if (newsegment != null) {
+        if (index != -1) {
+          segments[index] = newsegment;
+          Fluttertoast.showToast(msg: "segment successfully updated");
+        } else {
+          Fluttertoast.showToast(msg: "segment not found");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "oops, you gotta get something");
+      }
+    } else {
+      Fluttertoast.showToast(msg: "oops something went wrong");
     }
   }
 
