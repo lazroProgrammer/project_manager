@@ -9,7 +9,6 @@ import 'package:tasks/core/controllers/segments_controller.dart';
 import 'package:tasks/core/controllers/tasks_controller.dart';
 import 'package:tasks/core/notifiers/darkmode_notifier.dart';
 import 'package:tasks/database/database.dart';
-import 'package:tasks/main.dart';
 import 'package:tasks/pages/tasks_page.dart';
 import 'package:tasks/theme/app_theme.dart';
 import 'package:tasks/widgets/popup_menu.dart';
@@ -35,7 +34,6 @@ class ProjectPage extends ConsumerWidget {
     "animations, UI/UX",
     "deployment"
   ];
-
   final SegmentsController segmentsController =
       Get.find(tag: "project/segments");
   final ClickEffectController isClickedController =
@@ -75,6 +73,8 @@ class ProjectPage extends ConsumerWidget {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Obx(() {
+          final posKeys = List.generate(
+              segmentsController.segments.length, (_) => GlobalKey());
           return GridView.builder(
             itemCount: segmentsController.segments.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -84,6 +84,7 @@ class ProjectPage extends ConsumerWidget {
                 () {
                   final isClicked = isClickedController.clickStates[index];
                   return Container(
+                    key: posKeys[index],
                     padding: EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
@@ -100,7 +101,8 @@ class ProjectPage extends ConsumerWidget {
                           color: (dark) ? context.primaryColor : Colors.white60,
                           child: InkWell(
                             onLongPress: () {
-                              showPopupMenu(context, edit: () {}, delete: () {
+                              showPopupMenu(context, posKeys[index],
+                                  edit: () {}, delete: () {
                                 segmentsController.deleteSegmentById(
                                     segmentsController
                                         .segments[index].segmentID);

@@ -71,6 +71,8 @@ class TaskPage extends ConsumerWidget {
                 ),
               ),
               Obx(() {
+                final posKeys =
+                    List.generate(todo.todos.length, (_) => GlobalKey());
                 return ListView.builder(
                   itemCount: todo.todos.length,
                   itemBuilder: (context, index) {
@@ -79,9 +81,11 @@ class TaskPage extends ConsumerWidget {
                       final isPlayed =
                           taskCtrller.tasks[taskIndex].startDate != null;
                       return InkWell(
+                        key: posKeys[index],
                         onLongPress: () {
                           showPopupMenu(
                             context,
+                            posKeys[index],
                             edit: () {
                               showTodosAddForum(context, ref, todo,
                                   todo: todo.todos[index]);

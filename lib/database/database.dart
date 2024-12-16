@@ -9,7 +9,7 @@ part 'database.g.dart';
 
 class Projects extends Table {
   IntColumn get projectID => integer().autoIncrement()();
-  TextColumn get name => text().unique().withLength(min: 1, max: 20)();
+  TextColumn get name => text().withLength(min: 1, max: 20)();
   TextColumn get description => text()();
   TextColumn get state => text()();
   DateTimeColumn get createdAt => dateTime()();
