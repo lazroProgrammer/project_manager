@@ -192,7 +192,6 @@ void showTodosAddForum(
                               hintText: "name",
                               prefixIcon: const Icon(Icons.abc_rounded),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "insert a name";

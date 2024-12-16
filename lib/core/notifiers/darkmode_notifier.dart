@@ -8,6 +8,6 @@ class DarkmodeNotifier extends StateNotifier<bool> {
   DarkmodeNotifier() : super(SettingsData().darkmode);
   void toggleDarkmode(bool v) {
     SettingsData().update(darkTheme: v);
-    state = !v;
+    state = v;
   }
 }
