@@ -187,7 +187,6 @@ void showProjectAddForum(
                     } else {
                       p.editProject(newProject);
                     }
-                    p.insertProject(newProject).then((_) {});
                     Navigator.pop(context);
                   } else {
                     if (selectedTime != null &&
