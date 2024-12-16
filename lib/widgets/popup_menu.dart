@@ -55,8 +55,8 @@ RelativeRect calculateBottomRightPosition(BuildContext context, GlobalKey key) {
   final Size screenSize = MediaQuery.of(context).size;
 
   return RelativeRect.fromLTRB(
-    widgetPosition.dx + widgetSize.width,
-    widgetPosition.dy + widgetSize.height,
+    widgetPosition.dx + widgetSize.width * 0.75,
+    widgetPosition.dy + widgetSize.height * 0.65,
     screenSize.width - widgetPosition.dx - widgetSize.width,
     screenSize.height - widgetPosition.dy - widgetSize.height,
   );

@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ClickEffectController extends GetxController {
   RxList<bool> clickStates;
+  RxList<GlobalKey> posKeys;
 
   ClickEffectController(int length)
-      : clickStates = List.generate(length, (_) => false).obs;
+      : clickStates = List.generate(length, (_) => false).obs,
+        posKeys = List.generate(length, (_) => GlobalKey()).obs;
 
   // Enlarge button effect with delayed revert
   void buttonEnlarge(int index) {
@@ -18,6 +21,7 @@ class ClickEffectController extends GetxController {
 
   void updateLength(int length) {
     clickStates = List.generate(length, (_) => false).obs;
+    posKeys = List.generate(length, (_) => GlobalKey()).obs;
   }
 
   // Shrink button effect

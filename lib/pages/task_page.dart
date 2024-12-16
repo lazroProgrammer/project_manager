@@ -81,6 +81,7 @@ class TaskPage extends ConsumerWidget {
                       final isPlayed =
                           taskCtrller.tasks[taskIndex].startDate != null;
                       return InkWell(
+                        key: posKeys[index],
                         onLongPress: () {
                           showPopupMenu(
                             context,

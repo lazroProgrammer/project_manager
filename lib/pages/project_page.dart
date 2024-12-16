@@ -84,6 +84,7 @@ class ProjectPage extends ConsumerWidget {
                 () {
                   final isClicked = isClickedController.clickStates[index];
                   return Container(
+                    key: posKeys[index],
                     padding: EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
