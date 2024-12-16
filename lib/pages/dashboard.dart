@@ -22,7 +22,7 @@ class Dashboard extends ConsumerWidget {
           actions: [
             IconButton(
               onPressed: () {
-                ref.read(darkmodeNotifier.notifier).toggleDarkmode(dark);
+                ref.read(darkmodeNotifier.notifier).toggleDarkmode(!dark);
               },
               icon: TweenAnimationBuilder(
                   curve: Easing.legacyAccelerate,

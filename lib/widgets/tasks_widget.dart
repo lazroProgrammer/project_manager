@@ -16,109 +16,113 @@ class TasksWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dark = ref.watch(darkmodeNotifier);
     return Obx(() {
+      final posKeys = List.generate(tasks.tasks.length, (_) => GlobalKey());
       return ListView.builder(
           itemCount: tasks.tasks.length,
-          itemBuilder: (context, index) => InkWell(
-                onLongPress: () {
-                  showPopupMenu(context, edit: () {
-                    showTaskstAddForum(context, ref, tasks,
-                        task: tasks.tasks[index]);
-                  }, delete: () {
-                    tasks.deleteTaskById(tasks.tasks[index].taskID);
-                  });
-                },
-                onTap: () {
-                  TodoController todos =
-                      Get.put(TodoController(), tag: "tasks/todos");
-                  todos.getTodosBytaskID(tasks.tasks[index]);
-                  Get.to(
-                    () => TaskPage(
-                      taskCtrller: tasks,
-                      taskIndex: index,
-                    ),
-                    duration: Duration(milliseconds: 400),
-                    transition: Transition.fade,
-                  );
-                },
-                child: Obx(() {
-                  final isComplete = tasks.tasks[index].completionDate != null;
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: EdgeInsets.all(8),
-                    color: (!isComplete)
-                        ? null
-                        : dark
-                            ? Colors.green[700]
-                            : Colors.green[100],
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: IconButton(
-                            onPressed: () {
-                              tasks.toggleTaskCompletion(index, !isComplete);
-                            },
-                            icon: (!isComplete)
-                                ? Icon(
-                                    Icons.circle_outlined,
-                                    size: 36,
-                                  )
-                                : Icon(
-                                    Icons.check_circle_outline,
-                                    color: dark
-                                        ? Colors.green[900]!
-                                        : Colors.green[700],
-                                    size: 40,
-                                  ),
-                          ),
+          itemBuilder: (context, index) {
+            return InkWell(
+              key: posKeys[index],
+              onLongPress: () {
+                showPopupMenu(context, posKeys[index], edit: () {
+                  showTaskstAddForum(context, ref, tasks,
+                      task: tasks.tasks[index]);
+                }, delete: () {
+                  tasks.deleteTaskById(tasks.tasks[index].taskID);
+                });
+              },
+              onTap: () {
+                TodoController todos =
+                    Get.put(TodoController(), tag: "tasks/todos");
+                todos.getTodosBytaskID(tasks.tasks[index]);
+                Get.to(
+                  () => TaskPage(
+                    taskCtrller: tasks,
+                    taskIndex: index,
+                  ),
+                  duration: Duration(milliseconds: 400),
+                  transition: Transition.fade,
+                );
+              },
+              child: Obx(() {
+                final isComplete = tasks.tasks[index].completionDate != null;
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.all(8),
+                  color: (!isComplete)
+                      ? null
+                      : dark
+                          ? Colors.green[700]
+                          : Colors.green[100],
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: IconButton(
+                          onPressed: () {
+                            tasks.toggleTaskCompletion(index, !isComplete);
+                          },
+                          icon: (!isComplete)
+                              ? Icon(
+                                  Icons.circle_outlined,
+                                  size: 36,
+                                )
+                              : Icon(
+                                  Icons.check_circle_outline,
+                                  color: dark
+                                      ? Colors.green[900]!
+                                      : Colors.green[700],
+                                  size: 40,
+                                ),
                         ),
-                        Expanded(
-                            child: Text(
-                          "Task ${index + 1}: ${tasks.tasks[index].name}",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: tasks.tasks[index].completionDate != null
-                              ? Container()
-                              : Obx(() {
-                                  final isPlayed =
-                                      tasks.tasks[index].startDate != null;
-                                  return IconButton(
-                                    onPressed: () {
-                                      tasks.togglePlayTask(index, !isPlayed);
-                                    },
-                                    icon: TweenAnimationBuilder(
-                                        curve: Easing.legacy,
-                                        tween: Tween<double>(
-                                            begin: 0, end: isPlayed ? 0 : 2),
-                                        duration:
-                                            const Duration(milliseconds: 80),
-                                        builder: (context, value, child) {
-                                          return Transform.rotate(
-                                              angle: value *
-                                                  3.14, // Rotation animation
-                                              child: Opacity(
-                                                opacity: (1 - (value % 2))
-                                                    .abs(), // Fading effect
-                                                child: Icon(
-                                                  isPlayed
-                                                      ? Icons.pause
-                                                      : Icons.play_arrow,
-                                                  size: 30,
-                                                ),
-                                              ));
-                                        }),
-                                  );
-                                }),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ));
+                      ),
+                      Expanded(
+                          child: Text(
+                        "Task ${index + 1}: ${tasks.tasks[index].name}",
+                        style: TextStyle(fontSize: 18),
+                      )),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: tasks.tasks[index].completionDate != null
+                            ? Container()
+                            : Obx(() {
+                                final isPlayed =
+                                    tasks.tasks[index].startDate != null;
+                                return IconButton(
+                                  onPressed: () {
+                                    tasks.togglePlayTask(index, !isPlayed);
+                                  },
+                                  icon: TweenAnimationBuilder(
+                                      curve: Easing.legacy,
+                                      tween: Tween<double>(
+                                          begin: 0, end: isPlayed ? 0 : 2),
+                                      duration:
+                                          const Duration(milliseconds: 80),
+                                      builder: (context, value, child) {
+                                        return Transform.rotate(
+                                            angle: value *
+                                                3.14, // Rotation animation
+                                            child: Opacity(
+                                              opacity: (1 - (value % 2))
+                                                  .abs(), // Fading effect
+                                              child: Icon(
+                                                isPlayed
+                                                    ? Icons.pause
+                                                    : Icons.play_arrow,
+                                                size: 30,
+                                              ),
+                                            ));
+                                      }),
+                                );
+                              }),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            );
+          });
     });
   }
 }

@@ -235,7 +235,6 @@ void showProjectAddForum(
                               hintText: "name",
                               prefixIcon: const Icon(Icons.numbers),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "insert a name";
@@ -254,7 +253,6 @@ void showProjectAddForum(
                               hintText: "Description",
                               prefixIcon: const Icon(Icons.numbers),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "add a description";

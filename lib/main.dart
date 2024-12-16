@@ -10,6 +10,11 @@ import 'package:tasks/core/settings.dart';
 import 'package:tasks/pages/main_page.dart';
 import 'package:tasks/theme/app_theme.dart';
 
+//TODO: fix updates problems
+//TODO: fix shared preferences storage not stored or something
+//TODO: write tests to learn at least unit testing
+//TODO: more animations
+//TODO: learn to deploy an app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
@@ -29,19 +34,6 @@ void main() async {
     isClickedController.updateLength(projects.length);
   });
   runApp(const ProviderScope(child: MainApp()));
-}
-
-extension CustomColors on BuildContext {
-  Color get primaryColor => Theme.of(this).colorScheme.primary;
-  Color get secondaryColor => Theme.of(this).colorScheme.secondary;
-  Color get backgroundColor => Theme.of(this).colorScheme.surface;
-  Color get surfaceColor => Theme.of(this).colorScheme.surface;
-}
-
-extension CustomTextStyles on BuildContext {
-  TextStyle get headline1 => Theme.of(this).textTheme.headlineLarge!;
-  TextStyle get bodyText1 => Theme.of(this).textTheme.bodyLarge!;
-  TextStyle get caption => Theme.of(this).textTheme.labelLarge!;
 }
 
 class MainApp extends ConsumerWidget {

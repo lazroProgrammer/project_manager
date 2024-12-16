@@ -71,6 +71,8 @@ class TaskPage extends ConsumerWidget {
                 ),
               ),
               Obx(() {
+                final posKeys =
+                    List.generate(todo.todos.length, (_) => GlobalKey());
                 return ListView.builder(
                   itemCount: todo.todos.length,
                   itemBuilder: (context, index) {
@@ -82,6 +84,7 @@ class TaskPage extends ConsumerWidget {
                         onLongPress: () {
                           showPopupMenu(
                             context,
+                            posKeys[index],
                             edit: () {
                               showTodosAddForum(context, ref, todo,
                                   todo: todo.todos[index]);
@@ -192,7 +195,6 @@ void showTodosAddForum(
                               hintText: "name",
                               prefixIcon: const Icon(Icons.abc_rounded),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "insert a name";

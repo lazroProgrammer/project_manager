@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+extension CustomColors on BuildContext {
+  Color get primaryColor => Theme.of(this).colorScheme.primary;
+  Color get secondaryColor => Theme.of(this).colorScheme.secondary;
+  Color get backgroundColor => Theme.of(this).colorScheme.surface;
+  Color get surfaceColor => Theme.of(this).colorScheme.surface;
+}
+
+extension CustomTextStyles on BuildContext {
+  TextStyle get headline1 => Theme.of(this).textTheme.headlineLarge!;
+  TextStyle get bodyText1 => Theme.of(this).textTheme.bodyLarge!;
+  TextStyle get caption => Theme.of(this).textTheme.labelLarge!;
+}
+
 Color adjustBrightness(Color color,
     {required bool isDarkMode, double? brightness}) {
   // Convert the color to HSL

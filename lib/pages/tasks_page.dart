@@ -23,7 +23,7 @@ class TasksPage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              ref.read(darkmodeNotifier.notifier).toggleDarkmode(dark);
+              ref.read(darkmodeNotifier.notifier).toggleDarkmode(!dark);
             },
             icon: TweenAnimationBuilder(
                 curve: Easing.legacyAccelerate,
@@ -146,7 +146,6 @@ void showTaskstAddForum(
                               hintText: "name",
                               prefixIcon: const Icon(Icons.abc_rounded),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "insert a name";
@@ -165,7 +164,6 @@ void showTaskstAddForum(
                               hintText: "Description",
                               prefixIcon: const Icon(Icons.type_specimen),
                             ),
-                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.trim() == "") {
                                 return "add a description";

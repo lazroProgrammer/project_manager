@@ -5,7 +5,6 @@ import 'package:tasks/core/controllers/click_effect_controller.dart';
 import 'package:tasks/core/controllers/projects_controller.dart';
 import 'package:tasks/core/controllers/segments_controller.dart';
 import 'package:tasks/core/notifiers/darkmode_notifier.dart';
-import 'package:tasks/main.dart';
 import 'package:tasks/pages/project_page.dart';
 import 'package:tasks/theme/app_theme.dart';
 import 'package:tasks/widgets/popup_menu.dart';
@@ -15,6 +14,7 @@ class ProjectsPage extends ConsumerWidget {
 
   final projects = Get.find<ProjectsController>(tag: "projects");
   final segments = Get.put(SegmentsController(), tag: "project/segments");
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isClickedController =
@@ -28,7 +28,7 @@ class ProjectsPage extends ConsumerWidget {
           actions: [
             IconButton(
               onPressed: () {
-                ref.read(darkmodeNotifier.notifier).toggleDarkmode(dark);
+                ref.read(darkmodeNotifier.notifier).toggleDarkmode(!dark);
               },
               icon: TweenAnimationBuilder(
                   curve: Easing.legacyAccelerate,
@@ -55,6 +55,8 @@ class ProjectsPage extends ConsumerWidget {
         child: Obx(
           () {
             final projectsList = projects.projects;
+            final posKeys =
+                List.generate(projectsList.length, (_) => GlobalKey());
             return ListView.builder(
               itemCount: projectsList.length,
               itemBuilder: (context, index) {
@@ -79,7 +81,8 @@ class ProjectsPage extends ConsumerWidget {
                                 (dark) ? context.primaryColor : Colors.white60,
                             child: InkWell(
                               onLongPress: () {
-                                showPopupMenu(context, edit: () {}, delete: () {
+                                showPopupMenu(context, posKeys[index],
+                                    edit: () {}, delete: () {
                                   projects.deleteProjectById(
                                       projects.projects[index].projectID);
                                 });
