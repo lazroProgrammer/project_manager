@@ -30,8 +30,6 @@ class TodosDao extends DatabaseAccessor<AppDatabase> with _$TodosDaoMixin {
 
   Future<int> insertTodo(TodosCompanion todo) async {
     try {
-      int i = await db.into(db.todos).insertOnConflictUpdate(todo);
-      print(i);
       return await db.into(db.todos).insertOnConflictUpdate(todo);
     } catch (e) {
       print(e);
@@ -40,33 +38,36 @@ class TodosDao extends DatabaseAccessor<AppDatabase> with _$TodosDaoMixin {
   }
 
   Future<Todo?> getTodoByID(int id) async {
-    return await (select(db.todos)..where((tbl) => tbl.todoID.equals(id)))
-        .getSingleOrNull();
+    return await (select(db.todos)
+      ..where((tbl) => tbl.todoID.equals(id))).getSingleOrNull();
   }
 
   Future<List<Todo>> getTodosByTaskID(int taskID) async {
-    return await (select(db.todos)..where((tbl) => tbl.taskID.equals(taskID)))
-        .get();
+    return await (select(db.todos)
+      ..where((tbl) => tbl.taskID.equals(taskID))).get();
   }
 
   Future<int> editTodoByID(int id, Map<String, dynamic> updatedFields) async {
     try {
       final updatedCompanion = TodosCompanion(
         todoID: Value(id), // Always include the ID to locate the row
-        taskID: updatedFields.containsKey('taskID')
-            ? Value(updatedFields['taskID'] as int)
-            : const Value.absent(),
-        name: updatedFields.containsKey('name')
-            ? Value(updatedFields['name'] as String)
-            : const Value.absent(),
-        completedAt: updatedFields.containsKey('completedAt')
-            ? Value(updatedFields['completedAt'] as DateTime?)
-            : const Value.absent(),
+        taskID:
+            updatedFields.containsKey('taskID')
+                ? Value(updatedFields['taskID'] as int)
+                : const Value.absent(),
+        name:
+            updatedFields.containsKey('name')
+                ? Value(updatedFields['name'] as String)
+                : const Value.absent(),
+        completedAt:
+            updatedFields.containsKey('completedAt')
+                ? Value(updatedFields['completedAt'] as DateTime?)
+                : const Value.absent(),
       );
 
       // Perform the update operation in the database
-      return await (update(db.todos)..where((tbl) => tbl.todoID.equals(id)))
-          .write(updatedCompanion);
+      return await (update(db.todos)
+        ..where((tbl) => tbl.todoID.equals(id))).write(updatedCompanion);
     } catch (e) {
       return -1;
     }
