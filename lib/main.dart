@@ -10,17 +10,17 @@ import 'package:tasks/core/settings.dart';
 import 'package:tasks/pages/main_page.dart';
 import 'package:tasks/theme/app_theme.dart';
 
-//TODO: fix updates problems
-//TODO: fix shared preferences storage not stored or something
+//TODO: add posKeysController and twinAnimationController for better controll over the animations
 //TODO: write tests to learn at least unit testing
-//TODO: more animations
 //TODO: learn to deploy an app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
   await SettingsData.init();
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   final projectsController = Get.put(ProjectsController(), tag: "projects");
   await projectsController.getAll();

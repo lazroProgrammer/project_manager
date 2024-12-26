@@ -4,19 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tasks/core/controllers/click_effect_controller.dart';
 import 'package:tasks/core/controllers/segments_controller.dart';
-import 'package:tasks/core/controllers/tasks_controller.dart';
 import 'package:tasks/core/notifiers/darkmode_notifier.dart';
 import 'package:tasks/database/database.dart';
-import 'package:tasks/pages/tasks_page.dart';
-import 'package:tasks/theme/app_theme.dart';
-import 'package:tasks/widgets/popup_menu.dart';
+import 'package:tasks/widgets/darkmode_toggle.dart';
+import 'package:tasks/widgets/project_widget.dart';
 
 const STATE_LIST = ["draft", "pending", "on going", "completed"];
 
 class ProjectPage extends ConsumerWidget {
-  ProjectPage({super.key});
+  const ProjectPage({super.key});
 
   // final List<String> names = [
   //   "Drift Database",
@@ -34,146 +31,17 @@ class ProjectPage extends ConsumerWidget {
   //   "animations, UI/UX",
   //   "deployment"
   // ];
-  final SegmentsController segmentsController = Get.find(
-    tag: "project/segments",
-  );
-  final ClickEffectController isClickedController = Get.find(
-    tag: "segments_click_effect",
-  );
-  final TasksController tasksController = Get.put(
-    TasksController(-1),
-    tag: "segments/tasks",
-  );
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final SegmentsController segmentsController = Get.find(
+      tag: "project/segments",
+    );
     final dark = ref.watch(darkmodeNotifier);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("ProjectID: ${segmentsController.projectID}"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(darkmodeNotifier.notifier).toggleDarkmode(!dark);
-            },
-            icon: TweenAnimationBuilder(
-              curve: Easing.legacyAccelerate,
-              tween: Tween<double>(begin: 0, end: dark ? 0 : 2),
-              duration: const Duration(milliseconds: 500),
-              builder: (context, value, child) {
-                return Transform.rotate(
-                  angle: value * 3.14, // Rotation animation
-                  child: Opacity(
-                    opacity: (1 - (value % 2)).abs(), // Fading effect
-                    child: Icon(
-                      dark ? Icons.dark_mode : Icons.light_mode,
-                      size: 30,
-                      color: dark ? Colors.blue[500] : Colors.yellow[700],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text("Segments:"), actions: [DarkmodeToggle()]),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Obx(() {
-          final posKeys = List.generate(
-            segmentsController.segments.length,
-            (_) => GlobalKey(),
-          );
-          return GridView.builder(
-            itemCount: segmentsController.segments.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.9,
-            ),
-            itemBuilder: (context, index) {
-              return Obx(() {
-                final isClicked = isClickedController.clickStates[index];
-                return Container(
-                  key: posKeys[index],
-                  padding: EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: AnimatedScale(
-                    scale: isClicked ? 0.95 : 1.0,
-                    duration: const Duration(milliseconds: 100),
-                    child: Card(
-                      elevation: (dark) ? 2 : 3,
-                      shadowColor:
-                          (dark)
-                              ? context.primaryColor
-                              // : Theme.of(context).primaryColor,
-                              : context.primaryColor,
-                      color: (dark) ? context.primaryColor : Colors.white60,
-                      child: InkWell(
-                        onLongPress: () {
-                          showPopupMenu(
-                            context,
-                            posKeys[index],
-                            edit: () {},
-                            delete: () {
-                              segmentsController.deleteSegmentById(
-                                segmentsController.segments[index].segmentID,
-                              );
-                            },
-                          );
-                        },
-                        onTapCancel:
-                            () => isClickedController.buttonEnlarge(index),
-                        onTap: () {
-                          isClickedController.buttonShrink(index);
-                          isClickedController.buttonEnlarge(index);
-                          tasksController.getTasksBySegmentID(
-                            segmentsController.segments[index].segmentID,
-                          );
-                          Get.to(
-                            () => TasksPage(),
-                            duration: Duration(milliseconds: 400),
-                            transition: Transition.fade,
-                          );
-                        },
-                        splashColor:
-                            (dark)
-                                ? adjustBrightness(
-                                  context.primaryColor,
-                                  isDarkMode: dark,
-                                  brightness: 0.6,
-                                )
-                                : adjustBrightness(
-                                  context.primaryColor,
-                                  isDarkMode: dark,
-                                  brightness: 0.8,
-                                ),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(10, 10, 10, 6),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                segmentsController.segments[index].name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(segmentsController.segments[index].type),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              });
-            },
-          );
-        }),
+        child: ProjectWidget(segmentsController: segmentsController),
       ),
       floatingActionButton: Container(
         margin: EdgeInsets.all(8),

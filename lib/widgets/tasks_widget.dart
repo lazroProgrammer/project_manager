@@ -9,39 +9,19 @@ import 'package:tasks/pages/task_page.dart';
 import 'package:tasks/pages/tasks_page.dart';
 import 'package:tasks/widgets/popup_menu.dart';
 
-class TasksWidget extends ConsumerStatefulWidget {
+class TasksWidget extends ConsumerWidget {
   const TasksWidget({super.key, required this.tasks});
   final TasksController tasks;
 
   @override
-  _TasksWidgetState createState() => _TasksWidgetState();
-}
-
-class _TasksWidgetState extends ConsumerState<TasksWidget> {
-  late List<GlobalKey> posKeys;
-
-  @override
-  void initState() {
-    super.initState();
-    posKeys = List.generate(widget.tasks.tasks.length, (_) => GlobalKey());
-  }
-
-  @override
-  void didUpdateWidget(covariant TasksWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Regenerate keys if the tasks list changes
-    if (oldWidget.tasks.tasks.length != widget.tasks.tasks.length) {
-      posKeys = List.generate(widget.tasks.tasks.length, (_) => GlobalKey());
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dark = ref.watch(darkmodeNotifier);
 
     return Obx(() {
+      final posKeys = List.generate(tasks.tasks.length, (_) => GlobalKey());
+
       return ListView.builder(
-        itemCount: widget.tasks.tasks.length,
+        itemCount: tasks.tasks.length,
         itemBuilder: (context, index) {
           return InkWell(
             key: posKeys[index],
@@ -53,12 +33,12 @@ class _TasksWidgetState extends ConsumerState<TasksWidget> {
                   showTaskstAddForum(
                     context,
                     ref,
-                    widget.tasks,
-                    task: widget.tasks.tasks[index],
+                    tasks,
+                    task: tasks.tasks[index],
                   );
                 },
                 delete: () {
-                  widget.tasks.deleteTaskById(widget.tasks.tasks[index].taskID);
+                  tasks.deleteTaskById(tasks.tasks[index].taskID);
                 },
               );
             },
@@ -67,24 +47,23 @@ class _TasksWidgetState extends ConsumerState<TasksWidget> {
                 TodoController(),
                 tag: "tasks/todos",
               );
-              todos.getTodosBytaskID(widget.tasks.tasks[index]);
+              todos.getTodosBytaskID(tasks.tasks[index]);
               Get.to(
-                () => TaskPage(taskCtrller: widget.tasks, taskIndex: index),
+                () => TaskPage(taskCtrller: tasks, taskIndex: index),
                 duration: const Duration(milliseconds: 400),
                 transition: Transition.fade,
               );
             },
             child: AnimatedTaskItem(
-              task: widget.tasks.tasks[index],
+              task: tasks.tasks[index],
               isDarkMode: dark,
               onToggleCompletion: () {
-                final isComplete =
-                    widget.tasks.tasks[index].completionDate != null;
-                widget.tasks.toggleTaskCompletion(index, !isComplete);
+                final isComplete = tasks.tasks[index].completionDate != null;
+                tasks.toggleTaskCompletion(index, !isComplete);
               },
               onTogglePlay: () {
-                final isPlayed = widget.tasks.tasks[index].startDate != null;
-                widget.tasks.togglePlayTask(index, !isPlayed);
+                final isPlayed = tasks.tasks[index].startDate != null;
+                tasks.togglePlayTask(index, !isPlayed);
               },
             ),
           );
