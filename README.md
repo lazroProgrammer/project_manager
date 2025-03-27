@@ -18,6 +18,6 @@ A Flutter app that manage projects by adding to them segment(UI/UX, db, business
 - Logger
 - riverpod (was used just for darkmode, got lazy to fix it)
 
-##Notice:
+### Notice:
 
 this project contains some minor and uneffecting bugs conserning the animations and the UI, I did it just for learning, if i return to it i will fix it 
