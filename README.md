@@ -20,4 +20,4 @@ A Flutter app that manage projects by adding to them segment(UI/UX, db, business
 
 ### Notice:
 
-this project contains some minor and uneffecting bugs conserning the animations and the UI, I did it just for learning, if i return to it i will fix it 
+this project contains some minor and uneffecting bugs conserning the animations and the UI, I did it just for learning, if anyone uses it and he finds any bugs, open an issue, if i return to it i will fix them all 
