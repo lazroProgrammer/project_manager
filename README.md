@@ -16,7 +16,7 @@ A Flutter app that manage projects by adding to them segment(UI/UX, db, business
 - drift
 - SharedPreferences
 - Logger
-- riverpod (was used just for darkmode, got lazy to fix it)
+- riverpod (was used just for darkmode, was occupied to fix it, it takes 5 minutes to fix but okay)
 
 ### Notice:
 
